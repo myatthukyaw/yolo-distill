@@ -1,0 +1,9 @@
+path: /mnt/d/Workspace/Data/datasets/US-Coins.v1-with-augmentation.coco
+train: train
+validation: val
+test: test
+
+class_num: 4
+class_list: ['Dime', 'Nickel', 'Penny', 'Quarter']
+
+auto_download:

@@ -1,0 +1,8 @@
+path: /mnt/d/Workspace/Data/datasets/adult-kid-v2.1.1-xy-min-max
+train: train
+validation: val
+
+class_num: 2
+class_list: ['adult', 'kid']
+
+auto_download:

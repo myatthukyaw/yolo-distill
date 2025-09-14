@@ -1,0 +1,63 @@
+task: train
+
+defaults:
+  - validation: ../validation
+
+epoch: 50
+
+# distillation
+teacher_weight: None
+teacher_model: None
+
+data:
+  batch_size: 4
+  image_size: ${image_size}
+  cpu_num: 2 # ${cpu_num}
+  shuffle: True
+  pin_memory: False
+  data_augment:
+    Mosaic: 1
+    MixUp: 0
+    HorizontalFlip: 0.2
+    VerticalFlip: 0.2
+    # https://github.com/MultimediaTechLab/YOLO/issues/197
+
+optimizer:
+  type: SGD
+  args:
+    lr: 0.01
+    weight_decay: 0.0005
+    momentum: 0.937
+    nesterov: true
+
+loss:
+  distiller_type:  cwd # , feature_imitation_mask, cwd, mgd
+  objective:
+    BCELoss: 0.5
+    BoxLoss: 7.5
+    DFLoss: 1.5
+    # DistillLoss: 0.3
+  logging:
+    wandb:
+      enabled: true
+  aux:
+    0.25
+  matcher:
+    iou: CIoU
+    topk: 10
+    factor:
+      iou: 6.0
+      cls: 0.5
+
+scheduler:
+  type: LinearLR
+  warmup:
+    epochs: 3.0
+  args:
+    total_iters: ${task.epoch}
+    start_factor: 1
+    end_factor: 0.01
+
+ema:
+  enable: true
+  decay: 0.9999
