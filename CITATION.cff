@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+title: "YOLO MIT Knowledge Distillation"
+authors:
+  - family-names: "Myat Thu Kyaw"
+    given-names: "Myat Thu Kyaw"
+repository-code: "https://github.com/myatthukyaw/yolo-distill"
+license: MIT

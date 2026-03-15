@@ -1,0 +1,10 @@
+path: /mnt/d/Workspace/Data/datasets/People Detection.v11i.yolov9
+train: train
+validation: val
+test: test
+
+class_num: 1
+class_list: ['Person']
+
+auto_download:
+ 

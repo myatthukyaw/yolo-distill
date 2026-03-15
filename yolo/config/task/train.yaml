@@ -10,7 +10,7 @@ teacher_weight: None
 teacher_model: None
 
 data:
-  batch_size: 8
+  batch_size: 16
   image_size: ${image_size}
   cpu_num: 2 # ${cpu_num}
   shuffle: True

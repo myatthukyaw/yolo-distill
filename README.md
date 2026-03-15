@@ -1,5 +1,10 @@
 # YOLO Knowledge Distillation (MIT)
 
+![Python](https://img.shields.io/badge/Python-3.8+-blue)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+[![Weights & Biases](https://img.shields.io/badge/Tracked%20with-W%26B-yellow)](https://wandb.ai)
+
 This repository implements knowledge distillation methods for YOLO based on the [MIT-licensed YOLO repository](https://github.com/MultimediaTechLab/YOLO). The KD methods are added with minimal modifications to the original YOLO codebase.
 
 ## Supported distillation methods:
