@@ -157,6 +157,7 @@ class Config:
     use_tensorboard: bool
 
     weight: Optional[str]
+    wandb_group: Optional[str] = None
 
 
 @dataclass

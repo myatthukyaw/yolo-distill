@@ -287,7 +287,7 @@ def setup(cfg: Config):
         loggers.append(TensorBoardLogger(log_graph="all", save_dir=save_path))
     if cfg.use_wandb:
         wandb_cfg = OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
-        loggers.append(WandbLogger(project="YOLO", name=cfg.name, save_dir=save_path, id=None, config=wandb_cfg))
+        loggers.append(WandbLogger(project="yolo-distill", name=cfg.name, save_dir=save_path, id=None, config=wandb_cfg))
 
     return progress, loggers, save_path
 

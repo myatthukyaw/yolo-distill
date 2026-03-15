@@ -68,7 +68,7 @@ class MGDLoss(nn.Module):
     def __init__(self,
                  student_channels,
                  teacher_channels,
-                 alpha_mgd=0.00002,
+                 alpha_mgd=0.0002,  #0.00002,
                  lambda_mgd=0.65,
                  device=None
                  ):
@@ -77,12 +77,19 @@ class MGDLoss(nn.Module):
         self.lambda_mgd = lambda_mgd
         self.device = device
 
+        # self.generation = nn.ModuleList([
+        #     nn.Sequential(
+        #         nn.Conv2d(s_chan, t_chan, kernel_size=3, padding=1),
+        #         nn.ReLU(inplace=True),
+        #         nn.Conv2d(t_chan, t_chan, kernel_size=3, padding=1)
+        #     ).to(device) for s_chan, t_chan in zip(student_channels, teacher_channels)
+        # ])
         self.generation = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(s_chan, t_chan, kernel_size=3, padding=1),
+                nn.Conv2d(chan, chan, kernel_size=3, padding=1),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(t_chan, t_chan, kernel_size=3, padding=1)
-            ).to(device) for s_chan, t_chan in zip(student_channels, teacher_channels)
+                nn.Conv2d(chan, chan, kernel_size=3, padding=1)
+            ).to(device) for chan in teacher_channels
         ])
 
     def forward(self, y_s, y_t, layer=None):
@@ -97,8 +104,6 @@ class MGDLoss(nn.Module):
         """
         losses = []
         for idx, (s, t) in enumerate(zip(y_s, y_t)):
-            # print(s.shape)
-            # print(t.shape)
             # assert s.shape == t.shape
             if layer == "outlayer":
                 idx = -1
@@ -170,15 +175,13 @@ class FeatureLoss(nn.Module):
             t = t.type(next(self.align_module[idx].parameters()).dtype)
             
             if self.distiller == "cwd":
-                # Apply alignment and normalization
                 s = self.align_module[idx](s)
                 stu_feats.append(s)
                 tea_feats.append(t.detach())
-            else:
-                # Apply normalization
-                t = self.norm[idx](t)
+            else:  # mgd
+                s = self.align_module[idx](s)  # align student to teacher channels before generation
                 stu_feats.append(s)
-                tea_feats.append(t.detach())
+                tea_feats.append(t.detach())   # raw teacher features (no BN normalization)
 
         loss = self.feature_loss(stu_feats, tea_feats)
         return self.loss_weight * loss
@@ -294,9 +297,6 @@ class DistillationLoss:
             return torch.tensor(0.0, requires_grad=True)
 
         quant_loss = self.distill_loss_fn(y_s=self.student_outputs, y_t=self.teacher_outputs)
-        
-        if self.distiller != 'cwd':
-            quant_loss *= 0.3
 
         self.teacher_outputs.clear()
         self.student_outputs.clear()

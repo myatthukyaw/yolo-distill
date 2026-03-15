@@ -107,9 +107,8 @@ class TrainModel(ValidateModel):
         self.model.to(self.device)
 
         self.loss_fn = create_loss_function(
-            self.cfg, self.vec2box, model_s=self.model, 
+            self.cfg, self.vec2box, model_s=self.model,
             model_t=self.model_t, device=self.device,
-            len_train_loader=len(self.train_loader)
         )
 
     def train_dataloader(self):
@@ -157,20 +156,15 @@ class TrainModel(ValidateModel):
             batch_size=batch_size,
             rank_zero_only=True,
         )
-        # log distillation loss if available
-        if "Loss/DistillLoss" in loss_item:
-            self.log_dict(
-                {"Loss/DistillLoss": loss_item["Loss/DistillLoss"]},
-                prog_bar=True,
-                on_epoch=True,
-                batch_size=batch_size,
-                rank_zero_only=True,
-            )
         self.log_dict(lr_dict, prog_bar=False, logger=True, on_epoch=False, rank_zero_only=True)
         return loss * batch_size
 
     def configure_optimizers(self):
         optimizer = create_optimizer(self.model, self.cfg.task.optimizer)
+        if self.loss_fn.use_distill:
+            distill_params = list(self.loss_fn.distiller.distill_loss_fn.parameters())
+            optimizer.add_param_group({'params': distill_params})
+            optimizer.max_lr.append(0)
         scheduler = create_scheduler(optimizer, self.cfg.task.scheduler)
         return [optimizer], [scheduler]
 

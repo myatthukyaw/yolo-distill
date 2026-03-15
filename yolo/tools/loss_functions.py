@@ -110,11 +110,11 @@ class YOLOLoss:
 
 class DualLoss:
     def __init__(
-        self, cfg: Config, vec2box, model_s=None, model_t=None, device=None, len_train_loader=None
+        self, cfg: Config, vec2box, model_s=None, model_t=None, device=None
     ) -> None:
         self.loss_cfg = cfg.task.loss
         self.device = device
-        self.len_train_loader = len_train_loader
+        self.total_epochs = cfg.task.epoch
         self.loss = YOLOLoss(
             self.loss_cfg, vec2box, class_num=cfg.dataset.class_num, reg_max=cfg.model.anchor.reg_max
         )
@@ -147,8 +147,7 @@ class DualLoss:
         distill_loss = torch.tensor(0.0, device=self.device)
         if self.use_distill:
             if self.loss_cfg.distiller_type == "mgd":
-                # distill_weight = ((1 - math.cos(epoch_num * math.pi / self.len_train_loader)) / 2) * (0.1 - 1) + 1
-                distill_weight = ((1 - math.cos(epoch_num * math.pi / self.len_train_loader)) / 2) * (1 - 0.1) + 0.1
+                distill_weight = ((1 - math.cos(epoch_num * math.pi / self.total_epochs)) / 2) * (1 - 0.1) + 0.1
             elif self.loss_cfg.distiller_type == "cwd":
                 distill_weight = 0.3
             distill_loss = self.distiller.get_loss()
@@ -173,11 +172,11 @@ class DualLoss:
 
 
 def create_loss_function(
-    cfg: Config, vec2box, model_s=None, model_t=None, device=None, len_train_loader=None
+    cfg: Config, vec2box, model_s=None, model_t=None, device=None
 ) -> DualLoss:
     # TODO: make it flexible, if cfg doesn't contain aux, only use SingleLoss
     loss_function = DualLoss(
-        cfg, vec2box, model_s=model_s, model_t=model_t, device=device, len_train_loader=len_train_loader
+        cfg, vec2box, model_s=model_s, model_t=model_t, device=device
     )
 
     if model_s and model_t:

@@ -1,4 +1,4 @@
-path: /mnt/d/Workspace/Data/datasets/US-Coins.v1-with-augmentation.coco
+path: /mnt/d/Workspace/Data/datasets/US-Coins.v1-with-augmentation.yolov9
 train: train
 validation: val
 test: test

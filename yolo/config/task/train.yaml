@@ -10,16 +10,16 @@ teacher_weight: None
 teacher_model: None
 
 data:
-  batch_size: 4
+  batch_size: 8
   image_size: ${image_size}
   cpu_num: 2 # ${cpu_num}
   shuffle: True
   pin_memory: False
   data_augment:
     Mosaic: 1
-    MixUp: 0
-    HorizontalFlip: 0.2
-    VerticalFlip: 0.2
+    MixUp: 0.0
+    HorizontalFlip: 0.5
+    VerticalFlip: 0.0
     # https://github.com/MultimediaTechLab/YOLO/issues/197
 
 optimizer:

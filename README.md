@@ -19,8 +19,8 @@ pip install -r requirements.txt
 ## Tasks
 
 YOLO Dataset BBox format (cx cy w h) doesn't work with YOLO MIT repo. You need to convert the bbox to ( xmin ymin xmax ymax ) format. Use this script to convert your labels. 
-```
-python convert_labels.py
+```shell
+python scripts/convert_labels.py
 ```
 
 ### Training from scratch
@@ -45,13 +45,36 @@ python yolo/lazy.py task=train task.data.batch_size=8 model=v9-c dataset={datase
 
 ### Distillation
 
+CWD and MGD are **feature-level** distillation methods — they distill intermediate backbone/neck feature maps, not detection outputs. For the teacher to provide task-specific knowledge, it should be trained on the same dataset as the student first.
+
+**Step 1 — Train the teacher on your dataset:**
+
 ```shell
-## Using CWD Distill Loss
-python yolo/lazy.py task=train model=v9-t dataset=coins task.teacher_weight=weights/v9-s.pt task.teacher_model=v9-s use_wandb=True task.loss.distiller_type=cwd
+python yolo/lazy.py task=train model=v9-s dataset=coins name=v9s-teacher use_wandb=True
+```
 
-# Using MGD Distill Loss
-python yolo/lazy.py task=train model=v9-t dataset=coins task.teacher_weight=weights/v9-s.pt task.teacher_model=v9-s use_wandb=True task.loss.distiller_type=mgd
+**Step 2 — Train the student with distillation using the trained teacher:**
 
+```shell
+# CWD distillation
+python yolo/lazy.py task=train model=v9-t dataset=coins name=v9t-cwd \
+    task.teacher_weight=runs/train/v9s-teacher/.../checkpoints/epoch=49.ckpt \
+    task.teacher_model=v9-s \
+    task.loss.distiller_type=cwd \
+    use_wandb=True
+
+# MGD distillation
+python yolo/lazy.py task=train model=v9-t dataset=coins name=v9t-mgd \
+    task.teacher_weight=runs/train/v9s-teacher/.../checkpoints/epoch=49.ckpt \
+    task.teacher_model=v9-s \
+    task.loss.distiller_type=mgd \
+    use_wandb=True
+```
+
+**Or run the full comparison automatically (trains teacher first):**
+
+```shell
+python scripts/run_comparison.py --dataset coins --epochs 50 --teacher-epochs 50
 ```
 
 ### Inference

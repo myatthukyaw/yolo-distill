@@ -1,0 +1,10 @@
+path: /mnt/d/Workspace/Data/datasets/football-players-detection.v20-rf-detr-m.yolov9
+train: train
+validation: val
+test: test
+
+class_num: 4
+class_list: ['ball', 'goalkeeper', 'player', 'referee']
+
+auto_download:
+ 

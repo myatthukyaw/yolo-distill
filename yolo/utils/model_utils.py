@@ -126,7 +126,8 @@ def create_scheduler(optimizer: Optimizer, schedule_cfg: SchedulerConfig) -> _LR
         wepoch = schedule_cfg.warmup.epochs
         lambda1 = lambda epoch: (epoch + 1) / wepoch if epoch < wepoch else 1
         lambda2 = lambda epoch: 10 - 9 * ((epoch + 1) / wepoch) if epoch < wepoch else 1
-        warmup_schedule = LambdaLR(optimizer, lr_lambda=[lambda2, lambda1, lambda1])
+        lr_lambdas = [lambda2] + [lambda1] * (len(optimizer.param_groups) - 1)
+        warmup_schedule = LambdaLR(optimizer, lr_lambda=lr_lambdas)
         schedule = SequentialLR(optimizer, schedulers=[warmup_schedule, schedule], milestones=[wepoch - 1])
     return schedule
 

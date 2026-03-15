@@ -175,8 +175,10 @@ class MixUp:
         # Calculate the mixup lambda parameter
         lam = np.random.beta(self.alpha, self.alpha) if self.alpha > 0 else 0.5
 
-        # Mix images
+        # Mix images — resize image2 to match image1 if sizes differ
         image1, image2 = TF.to_tensor(image), TF.to_tensor(image2)
+        if image2.shape != image1.shape:
+            image2 = TF.resize(image2, [image1.shape[1], image1.shape[2]])
         mixed_image = lam * image1 + (1 - lam) * image2
 
         # Merge bounding boxes
