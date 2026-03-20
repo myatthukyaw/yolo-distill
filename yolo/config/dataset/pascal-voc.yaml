@@ -1,0 +1,7 @@
+path: /mnt/d/Workspace/Data/datasets/pascal-voc.v1i.yolov9
+train: train
+validation: val
+test: test
+
+class_num: 20
+class_list: ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']

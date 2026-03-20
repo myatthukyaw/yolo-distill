@@ -1,0 +1,7 @@
+path: /mnt/d/Workspace/Data/datasets/FaceDetection.v25i.yolov9
+train: train
+validation: test
+test: val
+
+class_num: 1
+class_list: ['face']

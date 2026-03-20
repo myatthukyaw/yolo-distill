@@ -10,9 +10,9 @@ teacher_weight: None
 teacher_model: None
 
 data:
-  batch_size: 16
+  batch_size: 20
   image_size: ${image_size}
-  cpu_num: 2 # ${cpu_num}
+  cpu_num: 4 # ${cpu_num}
   shuffle: True
   pin_memory: False
   data_augment:
@@ -36,7 +36,7 @@ loss:
     BCELoss: 0.5
     BoxLoss: 7.5
     DFLoss: 1.5
-    # DistillLoss: 0.3
+    DistillLoss: 0.1
   logging:
     wandb:
       enabled: true
@@ -57,6 +57,7 @@ scheduler:
     total_iters: ${task.epoch}
     start_factor: 1
     end_factor: 0.01
+
 
 ema:
   enable: true

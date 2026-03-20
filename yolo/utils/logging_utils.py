@@ -232,11 +232,12 @@ class ImageLogger(Callback):
         pred_boxes = predicts[0] if isinstance(predicts, list) else predicts
         images = [images[0]]
         step = trainer.current_epoch
+        img_h, img_w = images[0].shape[-2:]
         for logger in trainer.loggers:
             if isinstance(logger, WandbLogger):
                 logger.log_image("Input Image", images, step=step)
-                logger.log_image("Ground Truth", images, step=step, boxes=[log_bbox(gt_boxes)])
-                logger.log_image("Prediction", images, step=step, boxes=[log_bbox(pred_boxes)])
+                logger.log_image("Ground Truth", images, step=step, boxes=[log_bbox(gt_boxes, image_size=(img_h, img_w))])
+                logger.log_image("Prediction", images, step=step, boxes=[log_bbox(pred_boxes, image_size=(img_h, img_w))])
 
 
 def setup_logger(logger_name, quite=False):

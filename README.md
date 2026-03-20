@@ -1,9 +1,8 @@
 # YOLO Knowledge Distillation (MIT)
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue)
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
-[![Weights & Biases](https://img.shields.io/badge/Tracked%20with-W%26B-yellow)](https://wandb.ai)
 
 This repository implements knowledge distillation methods for YOLO based on the [MIT-licensed YOLO repository](https://github.com/MultimediaTechLab/YOLO). The KD methods are added with minimal modifications to the original YOLO codebase.
 
@@ -13,19 +12,61 @@ This repository implements knowledge distillation methods for YOLO based on the 
 - CWD (Channel-Wise Distillation)
 - Feature Imitation with Masking (in progress)
 
+## Results
+
+Tested on [Face Detection Dataset](https://universe.roboflow.com/mohamed-traore-2ekkp/face-detection-mik1i/dataset/25) (Roboflow, ~4k images, 1 class).
+
+Image size 640×640, trained for 50 epochs. 
+
+| Model           | Params  | mAP@0.50      | mAP@0.50:0.95 |
+|-----------------|--------:|:-------------:|:-------------:|
+| v9-s (teacher)  | 9.7M    | **79.73**     | **46.13**     | 
+| v9-t (baseline) | 2.7M    | 70.57         | 39.57         | 
+| v9-t + CWD      | 2.7M    | 76.37         | 42.98         | 
+| v9-t + MGD      | 2.7M    | **79.41**     | **44.53**     | 
+
+
+- Baseline gap vs teacher: **-9.16 mAP@0.50**.
+- CWD recovers **+5.80** over baseline closing ~63% of the gap.
+- MGD recovers **+8.84** over baseline, almost fully closes the gap.
+- MGD at 2.7M params matches a 9.7M teacher — **3.5× compression with <0.5% mAP loss**
+- The same for mAP@0.5:0.95.
+
+
 ## Installation
 
 ```shell
-git clone git@github.com:MultimediaTechLab/YOLO.git
+git clone git@github.com:myatthukyaw/yolo-distill.git
 cd YOLO
 pip install -r requirements.txt
 ```
 
 ## Tasks
 
-YOLO Dataset BBox format (cx cy w h) doesn't work with YOLO MIT repo. You need to convert the bbox to ( xmin ymin xmax ymax ) format. Use this script to convert your labels. 
+### Dataset Preparation
+
+This repo (YOLO MIT) expects labels in **corner format** (`class xmin ymin xmax ymax`, normalized to [0,1]).
+
+**Roboflow datasets** are in YOLO format - `cx cy w h`.
+
+Use `prepare_roboflow_dataset.py`:
+
 ```shell
-python scripts/convert_labels.py
+# Converts labels in-place (xywh to xyxy) and writes train.txt / val.txt index files
+python scripts/prepare_roboflow_dataset.py --root /path/to/roboflow-dataset
+```
+
+If you have **other YOLO-format datasets** with `images/<phase>/ + labels/<phase>/` layout, use `convert_labels.py`:
+
+```shell
+python scripts/convert_labels.py --root /path/to/dataset --phase train
+```
+
+**Verify your label format** visually before training with `visualize_labels.py`:
+
+```shell
+# Side-by-side comparison of xyxy vs xywh - helps identify which format your labels are in
+python scripts/visualize_labels.py --folder path/to/images/
 ```
 
 ### Training from scratch
@@ -79,12 +120,14 @@ python yolo/lazy.py task=train model=v9-t dataset=coins name=v9t-mgd \
 **Or run the full comparison automatically (trains teacher first):**
 
 ```shell
-python scripts/run_comparison.py --dataset coins --epochs 50 --teacher-epochs 50
+python scripts/run_comparison.py --dataset [dataset yaml filename] --epochs 50 --teacher-epochs 50
+
+python scripts/run_comparison.py --dataset face --epochs 50 --teacher-epochs 50
 ```
 
 ### Inference
 
-To use a model for object detection, use:
+To run inference, use:
 
 ```shell
 python yolo/lazy.py # if cloned from GitHub
@@ -92,7 +135,7 @@ python yolo/lazy.py task=inference \ # default is inference
                     name=AnyNameYouWant \ # AnyNameYouWant
                     device=cpu \ # hardware cuda, cpu, mps
                     model=v9-s \ # model version: v9-c, m, s
-                    task.nms.min_confidence=0.1 \ # nms config
+                    task.nms.min_confidence=0.5 \ # nms config
                     task.fast_inference=onnx \ # onnx, trt, deploy
                     task.data.source=data/toy/images/train \ # file, dir, webcam
                     +quite=True \ # Quite Output
@@ -106,6 +149,8 @@ To validate model performance, or generate a json file in COCO format:
 python yolo/lazy.py task=validation
 python yolo/lazy.py task=validation dataset=toy
 ```
+
+---
 
 ## More Details
 

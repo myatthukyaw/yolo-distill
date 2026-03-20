@@ -134,7 +134,7 @@ class DualLoss:
                 distiller = self.loss_cfg.distiller_type,
                 device = self.device,
             )
-            # self.distill_rate = loss_cfg.objective.get("DistillLoss", 0.3)
+            self.distill_rate = self.loss_cfg.objective.get("DistillLoss", 0.1)
 
     def __call__(
         self, aux_predicts: List[Tensor], main_predicts: List[Tensor], targets: Tensor, epoch_num: int
@@ -147,9 +147,9 @@ class DualLoss:
         distill_loss = torch.tensor(0.0, device=self.device)
         if self.use_distill:
             if self.loss_cfg.distiller_type == "mgd":
-                distill_weight = ((1 - math.cos(epoch_num * math.pi / self.total_epochs)) / 2) * (1 - 0.1) + 0.1
+                distill_weight = ((1 - math.cos(epoch_num * math.pi / self.total_epochs)) / 2) * (1 - 0.1) * self.distill_rate + 0.1 * self.distill_rate
             elif self.loss_cfg.distiller_type == "cwd":
-                distill_weight = 0.3
+                distill_weight = self.distill_rate
             distill_loss = self.distiller.get_loss()
 
         total_loss = [

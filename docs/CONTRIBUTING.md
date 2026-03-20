@@ -96,6 +96,11 @@ This section documents every change made to the original YOLO repository to add 
 
 - Added `wandb_group: null`
 
+#### `yolo/utils/logging_utils.py`
+
+- `log_bbox()`: hardcoded `image_size=(640, 640)` default caused W&B bounding boxes to render at wrong positions when training at any size other than 640
+- `ImageLogger.on_validation_batch_end()`: now reads actual image dimensions from the tensor (`images[0].shape[-2:]`) and passes them to `log_bbox`, so ground truth and prediction boxes display correctly at any image size
+
 #### **LR warmup lambda count mismatch (`yolo/utils/model_utils.py`)**
 
 `create_scheduler` originally hardcoded 3 `lr_lambdas` for `LambdaLR`, matching the 3 base param groups from `create_optimizer`. With distillation, `configure_optimizers` adds a 4th group, causing:

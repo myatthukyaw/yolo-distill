@@ -32,12 +32,13 @@ import sys
 
 
 DEFAULTS = {
-    "dataset": "football-players",
+    "dataset": "face",
     "student_model": "v9-t",
     "teacher_model": "v9-s",
     "epochs": 50,
     "teacher_epochs": 50,
     "group": "distill-comparison",
+    "image_size": 640,
 }
 
 
@@ -67,6 +68,8 @@ def run(args):
     # ------------------------------------------------------------------ #
     # Step 1: Train teacher on the target dataset                         #
     # ------------------------------------------------------------------ #
+    image_size_arg = [f"image_size=[{args.image_size},{args.image_size}]"] if args.image_size else []
+
     if not args.skip_teacher:
         teacher_cmd = [
             sys.executable, "yolo/lazy.py",
@@ -77,7 +80,7 @@ def run(args):
             f"task.epoch={args.teacher_epochs}",
             "use_wandb=True",
             f"wandb_group={args.group}",
-        ]
+        ] + image_size_arg
         run_experiment(teacher_cmd, teacher_name)
         teacher_weight = find_latest_checkpoint(teacher_name)
         print(f"\nTeacher checkpoint: {teacher_weight}\n")
@@ -124,7 +127,7 @@ def run(args):
             f"task.epoch={args.epochs}",
             "use_wandb=True",
             f"wandb_group={args.group}",
-        ]
+        ] + image_size_arg
         if exp["distill"]:
             # Wrap teacher_weight in single quotes so Hydra treats the path as
             # a quoted string literal — checkpoint filenames contain '=' characters
@@ -162,6 +165,8 @@ if __name__ == "__main__":
                         help="Teacher training epochs (default: 50)")
     parser.add_argument("--group", default=DEFAULTS["group"],
                         help="W&B group name (default: distill-comparison)")
+    parser.add_argument("--image-size", type=int, default=DEFAULTS["image_size"],
+                        help="Input image size (square). Overrides config default, e.g. --image-size 416")
     parser.add_argument("--skip-teacher", action="store_true",
                         help="Skip teacher training (use with --teacher-weight)")
     parser.add_argument("--teacher-weight", default=None,

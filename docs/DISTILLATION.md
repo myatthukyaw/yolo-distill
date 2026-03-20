@@ -32,11 +32,13 @@ loss:
     BCELoss: 0.5
     BoxLoss: 7.5
     DFLoss: 1.5
+    DistillLoss: 0.1
 ```
 
 - `teacher_weight`: Path to a trained teacher checkpoint. Accepts both `.pt` and Lightning `.ckpt` files.
 - `teacher_model`: Architecture of the teacher (e.g., `v9-s`, `v9-m`).
 - `distiller_type`: Selects the distillation strategy.
+- `DistillLoss`: Scaling factor for the distillation loss. For CWD this is used directly; for MGD it sets the ceiling of the cosine warmup schedule. Lower values reduce distillation pressure — try `0.05`–`0.2`.
 
 ### Feature Hook Extraction (`yolo/tools/distill_loss.py`)
 
@@ -58,7 +60,7 @@ Loss = KL(teacher_dist || student_dist) per channel, averaged over all layers
 ```
 
 **Hyperparameters:**
-- `distill_weight = 0.3` — fixed scaling applied to the CWD loss
+- `distill_weight` — reads `DistillLoss` from `train.yaml` objective config (default `0.1`); previously hardcoded to `0.3`
 - `tau = 1.0` — softmax temperature
 
 ---
@@ -80,10 +82,12 @@ Loss = MSELoss(sum)(generated, teacher) / N * alpha_mgd
 - `alpha_mgd = 0.0002` — scales the MSE loss to be comparable to detection losses
 - `lambda_mgd = 0.65` — fraction of spatial positions masked (65%)
 
-**Cosine warmup schedule:** MGD uses a cosine-annealed distillation weight that ramps from `0.1` to `1.0` over all training epochs:
+**Cosine warmup schedule:** MGD uses a cosine-annealed distillation weight scaled by `distill_rate` (the `DistillLoss` config value, default `0.1`):
 
 ```python
-distill_weight = ((1 - cos(epoch * π / total_epochs)) / 2) * (1 - 0.1) + 0.1
+distill_rate   = loss_cfg.objective["DistillLoss"]   # e.g. 0.1
+distill_weight = (((1 - cos(epoch * π / total_epochs)) / 2) * (1 - 0.1) + 0.1) * distill_rate
+# ramps from 0.1 * distill_rate → 1.0 * distill_rate  (e.g. 0.01 → 0.1 with default config)
 ```
 
 **Key design notes matching the original paper (arxiv:2205.01529):**
