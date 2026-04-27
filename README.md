@@ -37,7 +37,7 @@ Image size 640×640, trained for 50 epochs.
 
 ```shell
 git clone git@github.com:myatthukyaw/yolo-distill.git
-cd YOLO
+cd yolo-distill
 pip install -r requirements.txt
 ```
 
