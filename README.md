@@ -29,7 +29,7 @@ Image size 640×640, trained for 50 epochs.
 - Baseline gap vs teacher: **-9.16 mAP@0.50**.
 - CWD recovers **+5.80** over baseline closing ~63% of the gap.
 - MGD recovers **+8.84** over baseline, almost fully closes the gap.
-- MGD at 2.7M params matches a 9.7M teacher — **3.5× compression with <0.5% mAP loss**
+- MGD at 2.7M params matches a 9.7M teacher - **3.5× compression with <0.5% mAP loss**
 - The same for mAP@0.5:0.95.
 
 
@@ -91,15 +91,15 @@ python yolo/lazy.py task=train task.data.batch_size=8 model=v9-c dataset={datase
 
 ### Distillation
 
-CWD and MGD are **feature-level** distillation methods — they distill intermediate backbone/neck feature maps, not detection outputs. For the teacher to provide task-specific knowledge, it should be trained on the same dataset as the student first.
+CWD and MGD are **feature-level** distillation methods - they distill intermediate backbone/neck feature maps, not detection outputs. For the teacher to provide task-specific knowledge, it should be trained on the same dataset as the student first.
 
-**Step 1 — Train the teacher on your dataset:**
+**Step 1 - Train the teacher on your dataset:**
 
 ```shell
 python yolo/lazy.py task=train model=v9-s dataset=coins name=v9s-teacher use_wandb=True
 ```
 
-**Step 2 — Train the student with distillation using the trained teacher:**
+**Step 2 - Train the student with distillation using the trained teacher:**
 
 ```shell
 # CWD distillation
