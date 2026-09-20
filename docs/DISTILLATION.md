@@ -38,7 +38,7 @@ loss:
 - `teacher_weight`: Path to a trained teacher checkpoint. Accepts both `.pt` and Lightning `.ckpt` files.
 - `teacher_model`: Architecture of the teacher (e.g., `v9-s`, `v9-m`).
 - `distiller_type`: Selects the distillation strategy.
-- `DistillLoss`: Scaling factor for the distillation loss. For CWD this is used directly; for MGD it sets the ceiling of the cosine warmup schedule. Lower values reduce distillation pressure — try `0.05`–`0.2`.
+- `DistillLoss`: Scaling factor for the distillation loss. For CWD this is used directly; for MGD it sets the ceiling of the cosine warmup schedule. Lower values reduce distillation pressure - try `0.05`–`0.2`.
 
 ### Feature Hook Extraction (`yolo/tools/distill_loss.py`)
 
@@ -60,8 +60,8 @@ Loss = KL(teacher_dist || student_dist) per channel, averaged over all layers
 ```
 
 **Hyperparameters:**
-- `distill_weight` — reads `DistillLoss` from `train.yaml` objective config (default `0.1`); previously hardcoded to `0.3`
-- `tau = 1.0` — softmax temperature
+- `distill_weight` - reads `DistillLoss` from `train.yaml` objective config (default `0.1`); previously hardcoded to `0.3`
+- `tau = 1.0` - softmax temperature
 
 ---
 
@@ -79,8 +79,8 @@ Loss = MSELoss(sum)(generated, teacher) / N * alpha_mgd
 ```
 
 **Hyperparameters:**
-- `alpha_mgd = 0.0002` — scales the MSE loss to be comparable to detection losses
-- `lambda_mgd = 0.65` — fraction of spatial positions masked (65%)
+- `alpha_mgd = 0.0002` - scales the MSE loss to be comparable to detection losses
+- `lambda_mgd = 0.65` - fraction of spatial positions masked (65%)
 
 **Cosine warmup schedule:** MGD uses a cosine-annealed distillation weight scaled by `distill_rate` (the `DistillLoss` config value, default `0.1`):
 
@@ -91,10 +91,10 @@ distill_weight = (((1 - cos(epoch * π / total_epochs)) / 2) * (1 - 0.1) + 0.1) 
 ```
 
 **Key design notes matching the original paper (arxiv:2205.01529):**
-- Mask shape is `(N, 1, H, W)` — spatial mask broadcast across all channels (not per-channel)
-- Alignment uses a pure `1×1 Conv2d`, **no BatchNorm** — BN would change scale/shift and interfere with the generation network learning
-- MSE target is **raw teacher features**, not BN-normalized — the generation network learns to reconstruct the teacher's actual activations
-- `MSELoss(reduction='sum') / N` — matches the paper exactly
+- Mask shape is `(N, 1, H, W)` - spatial mask broadcast across all channels (not per-channel)
+- Alignment uses a pure `1×1 Conv2d`, **no BatchNorm** - BN would change scale/shift and interfere with the generation network learning
+- MSE target is **raw teacher features**, not BN-normalized - the generation network learns to reconstruct the teacher's actual activations
+- `MSELoss(reduction='sum') / N` - matches the paper exactly
 
 ---
 
@@ -119,8 +119,8 @@ The detection loss trains the student to detect objects. The distillation loss a
 ## Training Process (`yolo/tools/solver.py`)
 
 Each training step:
-1. Student forward pass — hooks collect student feature maps at layers 6, 8, 12, 15, 18, 21.
-2. Teacher forward pass (no grad) — hooks collect teacher feature maps.
+1. Student forward pass - hooks collect student feature maps at layers 6, 8, 12, 15, 18, 21.
+2. Teacher forward pass (no grad) - hooks collect teacher feature maps.
 3. Distillation loss computed from collected features (align + KL/MGD generation).
 4. Total loss = detection loss + `distill_weight` × distillation loss.
 5. Backprop updates: student backbone, alignment layers, and generation network together.
@@ -142,7 +142,7 @@ nms:
 
 ## Usage
 
-### Step 1 — Train the teacher on your dataset
+### Step 1 - Train the teacher on your dataset
 
 ```shell
 python yolo/lazy.py task=train \
@@ -152,7 +152,7 @@ python yolo/lazy.py task=train \
     use_wandb=True
 ```
 
-### Step 2 — Train student with distillation using the trained teacher
+### Step 2 - Train student with distillation using the trained teacher
 
 Find the checkpoint saved under `runs/train/v9s-teacher/`:
 
